@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QuitaMarca</title>
+<meta name="theme-color" content="#1f6feb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="QuitaMarca">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
 :root { --bg:#f6f5f2; --fg:#1d1d1b; --card:#fff; --line:#d9d6cf; --acc:#1f6feb; --mut:#6b6a66; }
 @media (prefers-color-scheme: dark) { :root { --bg:#161616; --fg:#eceae4; --card:#222; --line:#3a3a38; --acc:#5aa2ff; --mut:#9c9a94; } }
@@ -45,7 +52,7 @@ video#result { width:100%; max-height:50vh; border-radius:8px; margin-top:8px; b
 <main>
   <header class="top">
     <h1>QuitaMarca</h1>
-    <label class="btn primary" for="file">Abrir imagen o video</label>
+    <div class="row" style="margin:0"><button id="install" class="btn" hidden>Instalar app</button><label class="btn primary" for="file">Abrir imagen o video</label></div>
     <input id="file" type="file" accept="image/*,video/*">
   </header>
   <p id="status" class="status">Abre una imagen o un video para empezar. Todo se procesa en tu navegador; nada se sube.</p>
@@ -863,6 +870,15 @@ video#result { width:100%; max-height:50vh; border-radius:8px; margin-top:8px; b
   }
 })();
 
+</script>
+<script>
+(function () {
+  if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  var ev = null, btn = document.getElementById('install');
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); ev = e; btn.hidden = false; });
+  btn.addEventListener('click', function () { if (!ev) return; ev.prompt(); ev.userChoice.finally(function () { ev = null; btn.hidden = true; }); });
+  window.addEventListener('appinstalled', function () { btn.hidden = true; });
+})();
 </script>
 </body>
 </html>
