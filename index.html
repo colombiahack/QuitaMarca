@@ -138,6 +138,9 @@ video#result { width:100%; max-height:50vh; border-radius:8px; margin-top:8px; b
         <label class="field grow">Calidad JPG <input id="imgQ" type="range" min="50" max="100" value="92"></label>
       </div>
       <div id="vidOpts" class="row" hidden>
+        <label class="check">Formato
+          <select id="vidFmt"><option value="mp4" selected>MP4</option><option value="webm">WebM</option></select>
+        </label>
         <label class="check">Tamaño máx.
           <select id="vidMax"><option value="720">720p</option><option value="1080" selected>1080p</option><option value="0">Original</option></select>
         </label>
@@ -785,8 +788,11 @@ video#result { width:100%; max-height:50vh; border-radius:8px; margin-top:8px; b
     }, jpeg ? 'image/jpeg' : 'image/png', +$('imgQ').value / 100);
   }
 
-  function pickMime() {
-    var list = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
+  // Formatos de grabación, del preferido al de reserva
+  var MP4 = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4;codecs=avc1', 'video/mp4'];
+  var WEBM = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+  function pickMime(pref) {
+    var list = pref === 'webm' ? WEBM.concat(MP4) : MP4.concat(WEBM);
     for (var i = 0; i < list.length; i++) if (window.MediaRecorder && MediaRecorder.isTypeSupported(list[i])) return list[i];
     return '';
   }
@@ -817,7 +823,7 @@ video#result { width:100%; max-height:50vh; border-radius:8px; margin-top:8px; b
       media.audio.dest.stream.getAudioTracks().forEach(function (t) { stream.addTrack(t); hasAudio = true; });
     } catch (e) { hasAudio = false; }
 
-    var mime = pickMime();
+    var mime = pickMime($('vidFmt').value);
     var rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 8000000 } : undefined);
     var chunks = [];
     rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
@@ -852,7 +858,7 @@ video#result { width:100%; max-height:50vh; border-radius:8px; margin-top:8px; b
     var blob = new Blob(chunks, { type: type });
     var url = offerDownload(blob, base(media.name) + '_editado.' + (type === 'video/mp4' ? 'mp4' : 'webm'), 'Descargar video');
     var rv = $('result'); rv.src = url; rv.hidden = false;
-    setStatus('Listo.');
+    setStatus(type === 'video/mp4' ? 'Listo (MP4).' : ($('vidFmt').value === 'mp4' ? 'Listo. Tu navegador no puede grabar MP4; se guardó en WebM.' : 'Listo (WebM).'));
     requestDraw();
   }
 })();
