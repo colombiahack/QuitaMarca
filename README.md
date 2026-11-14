@@ -46,3 +46,8 @@ node tests/effects.test.js
 
 ## Licencia
 MIT.
+
+
+
+
+https://colombiahack.github.io/QuitaMarca/
